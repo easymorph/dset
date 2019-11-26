@@ -1,0 +1,11 @@
+bin
+obj
+*.user
+*.dll
+*.suo
+*.ide
+*.key
+*.p12
+*.pdf
+*.bat
+.idea
