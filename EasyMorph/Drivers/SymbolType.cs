@@ -1,5 +1,8 @@
 ﻿namespace EasyMorph.Drivers
 {
+    /// <summary>
+    /// Type of symbols encoded in dst file
+    /// </summary>
     enum SymbolType : byte
     {
         Nothing = 0,

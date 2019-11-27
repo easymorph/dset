@@ -1,5 +1,10 @@
-﻿namespace EasyMorph.Data
+﻿using System;
+
+namespace EasyMorph.Data
 {
+    /// <summary>
+    /// Type of cell in dataset
+    /// </summary>
     public enum CellType
     {
         Number = 0,
@@ -9,5 +14,30 @@
         Error = 4
     }
 
-    public struct Nothing { }
+    /// <summary>
+    /// Nothing value
+    /// </summary>
+    public class Nothing : IEquatable<Nothing>
+    {
+        private Nothing()
+        {
+        }
+
+        public static Nothing Instance { get; } = new Nothing();
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Nothing);
+        }
+
+        public override int GetHashCode()
+        {
+            return 0;
+        }
+
+        public bool Equals(Nothing obj)
+        {
+            return obj != null;
+        }
+    }
 }
