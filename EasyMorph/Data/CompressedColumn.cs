@@ -57,6 +57,7 @@
                 byteIndex++;
                 //store new byte in result
                 result = (ulong)_vectorBytes[byteIndex] << bitsRead | result;
+                bitsRead += 8;
             }
             //trim result with bit mask
             return (int)(result & _mask);

@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyMorph", "EasyMorph\EasyMorph.csproj", "{9A96DBE3-34E0-442A-B28A-A1CE4BBB6C6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DsetToCsv", "DsetToCsv\DsetToCsv.csproj", "{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{9A96DBE3-34E0-442A-B28A-A1CE4BBB6C6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A96DBE3-34E0-442A-B28A-A1CE4BBB6C6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A96DBE3-34E0-442A-B28A-A1CE4BBB6C6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

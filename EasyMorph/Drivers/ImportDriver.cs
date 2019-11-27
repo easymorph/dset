@@ -140,13 +140,14 @@ namespace EasyMorph.Drivers
             int vectorLength = br.ReadInt32();
 
             var stream = br.BaseStream;
-            byte[] bytes = new byte[stream.Length - stream.Position];
+            var numberOfBytes = (int) Math.Ceiling((double) bitWidth * vectorLength / 8.0);
+            byte[] bytes = new byte[numberOfBytes];
             int offset = 0;
-            int bytesRead;
             const int chunkSize = 10240;
-            while((bytesRead = await stream.ReadAsync(bytes, offset, chunkSize, token)) > 0)
+            while(offset < bytes.Length)
             {
-                offset += bytesRead;
+                var count = Math.Min(bytes.Length - offset, chunkSize);
+                offset += await stream.ReadAsync(bytes, offset, count, token);
             }
 
             return new CompressedColumn(bytes, vocabulary, bitWidth, vectorLength, fieldName);

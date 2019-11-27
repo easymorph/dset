@@ -53,7 +53,7 @@
         public decimal? GetNumber(int i)
         {
             var item = _items[i];
-            return item.Type == CellType.Number ? (int?)_decimals[item.Index] : null;
+            return item.Type == CellType.Number ? (decimal?)_decimals[item.Index] : null;
         }
 
         /// <summary>
