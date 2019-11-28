@@ -3,14 +3,17 @@
     /// <summary>
     /// Compressed column with unique vocabulary and vector with references to values from vocabulary
     /// </summary>
-    class CompressedColumn: IColumn
+    class CompressedColumn : IColumn
     {
         //Bit-compressed vector array
         private readonly byte[] _vectorBytes;
+
         //Vocabulary with unique values
         private readonly Vocabulary _vocabulary;
+
         //Number of bits which takes encode one vector index
         private readonly int _bitWidth;
+
         //Mask for 00001111 where number of '1' is equal notwidth
         private readonly ulong _mask;
 
@@ -18,6 +21,7 @@
         /// Column name
         /// </summary>
         public string Name { get; }
+
         /// <summary>
         /// Column length
         /// </summary>
@@ -30,7 +34,7 @@
             _bitWidth = bitWidth;
             Length = length;
             Name = name;
-            _mask = ((ulong)1 << bitWidth) - 1;
+            _mask = ((ulong) 1 << bitWidth) - 1;
         }
 
         /// <summary>
@@ -41,11 +45,11 @@
         private int GetVocabularyIndex(int rowIndex)
         {
             //calculate firstBut position in byte array
-            var firstBit = rowIndex * _bitWidth;
+            ulong firstBit = (ulong) rowIndex * (ulong) _bitWidth;
             //byte index where first bit is located
             var byteIndex = firstBit / 8;
             //Bit number in first byte
-            var byteOffset = firstBit % 8;
+            var byteOffset = (int) (firstBit % 8);
             //Move first bit to 0 position and store to result
             var result = (ulong) (_vectorBytes[byteIndex] >> byteOffset);
             //calculate number of read bits
@@ -56,11 +60,11 @@
                 //increase byte index
                 byteIndex++;
                 //store new byte in result
-                result = (ulong)_vectorBytes[byteIndex] << bitsRead | result;
+                result = (ulong) _vectorBytes[byteIndex] << bitsRead | result;
                 bitsRead += 8;
             }
             //trim result with bit mask
-            return (int)(result & _mask);
+            return (int) (result & _mask);
         }
 
         /// <summary>
