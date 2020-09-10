@@ -14,7 +14,7 @@
         //Number of bits which takes encode one vector index
         private readonly int _bitWidth;
 
-        //Mask for 00001111 where number of '1' is equal notwidth
+        //Mask for 00001111 where number of '1' is equal to bitwidth
         private readonly ulong _mask;
 
         /// <summary>

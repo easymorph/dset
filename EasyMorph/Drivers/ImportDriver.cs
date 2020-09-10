@@ -14,7 +14,8 @@ namespace EasyMorph.Drivers
     class ImportDriver: IImportDriver
     {
         //Version of dset file
-        const string VERSION = "HIBC00";
+        const string VERSION00 = "HIBC00";
+        const string VERSION01 = "HIBC01";
         //Constant which defines compressed type of column in file
         const string COMPRESSED_COLUMN_TYPE_NAME = "Column.Compressed";
         //Constant which defines constant type of column in file
@@ -48,7 +49,7 @@ namespace EasyMorph.Drivers
                     //Read version from file
                     string version = new string(br.ReadChars(6));
 
-                    if (!version.Equals(VERSION))
+                    if (!version.Equals(VERSION00) && !version.Equals(VERSION01))
                         throw new Exception("Wrong file header format.");
 
                     while (fs.Position < fs.Length)
@@ -60,7 +61,8 @@ namespace EasyMorph.Drivers
                         // SectionType, for now only one type is supported: EasyMorph.CompressedField.0
                         br.ReadString();
                         //Length of current block(field)
-                        int blockLength = br.ReadInt32();
+                        long blockLength = 
+                            version.Equals(VERSION00) ? br.ReadInt32() : br.ReadInt64();
 
                         long blockStartPosition = fs.Position;
 
