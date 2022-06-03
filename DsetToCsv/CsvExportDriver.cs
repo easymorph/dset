@@ -17,77 +17,85 @@ namespace DsetToCsv
         {
             using (StreamWriter file = new StreamWriter(fileName, false, Encoding.UTF8))
             {
-                token.ThrowIfCancellationRequested();
+                WriteData(dataset, file, separator, token);
+            }
+        }
 
-                int width = dataset.ColumnsCount;
-                if (width == 0)
-                    return;
+        /// <summary>
+        /// Writes CSV data to specified StreamWriter.
+        /// </summary>
+        public static void WriteData(IDataset dataset, TextWriter file, string separator, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
 
-                int length = dataset.RowsCount;
+            int width = dataset.ColumnsCount;
+            if (width == 0)
+                return;
 
-                string[] columnNames = dataset.Columns.Select(c => c.Name).ToArray();
+            int length = dataset.RowsCount;
+
+            string[] columnNames = dataset.Columns.Select(c => c.Name).ToArray();
 
 
-                StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
-                for (int i = 0; i < width; i++)
+            for (int i = 0; i < width; i++)
+            {
+                if (i > 0)
+                    sb.Append(separator);
+
+                AppendValue(sb, columnNames[i]);
+            }
+
+            if (length > 0)
+                sb.Append(Environment.NewLine);
+
+            file.Write(sb.ToString());
+            sb.Clear();
+
+            token.ThrowIfCancellationRequested();
+
+            // Values.
+            for (int row = 0; row < length; row++)
+            {
+                for (int column = 0; column < width; column++)
                 {
-                    if (i > 0)
+                    token.ThrowIfCancellationRequested();
+
+                    if (column > 0)
                         sb.Append(separator);
 
-                    AppendValue(sb, columnNames[i]);
+                    string value;
+                    switch (dataset.GetType(column, row))
+                    {
+                        case CellType.Boolean:
+                            value = dataset.GetBoolean(column, row).GetValueOrDefault() ? "TRUE" : "FALSE";
+                            break;
+                        case CellType.Text:
+                            value = dataset.GetText(column, row);
+                            break;
+                        case CellType.Error:
+                            value = dataset.GetError(column, row);
+                            break;
+                        case CellType.Number:
+                            value = dataset.GetNumber(column, row).GetValueOrDefault()
+                                .ToString(CultureInfo.InvariantCulture);
+                            break;
+                        case CellType.Nothing:
+                            value = "";
+                            break;
+                        default:
+                            throw new Exception("Unknown cell type");
+                    }
+
+                    AppendValue(sb, value);
                 }
 
-                if (length > 0)
+                if (row < length - 1)
                     sb.Append(Environment.NewLine);
 
                 file.Write(sb.ToString());
                 sb.Clear();
-
-                token.ThrowIfCancellationRequested();
-
-                // Values.
-                for (int row = 0; row < length; row++)
-                {
-                    for (int column = 0; column < width; column++)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        if (column > 0)
-                            sb.Append(separator);
-
-                        string value;
-                        switch (dataset.GetType(column, row))
-                        {
-                            case CellType.Boolean:
-                                value = dataset.GetBoolean(column, row).GetValueOrDefault() ? "TRUE" : "FALSE";
-                                break;
-                            case CellType.Text:
-                                value = dataset.GetText(column, row);
-                                break;
-                            case CellType.Error:
-                                value = dataset.GetError(column, row);
-                                break;
-                            case CellType.Number:
-                                value = dataset.GetNumber(column, row).GetValueOrDefault()
-                                    .ToString(CultureInfo.InvariantCulture);
-                                break;
-                            case CellType.Nothing:
-                                value = "";
-                                break;
-                            default:
-                                throw new Exception("Unknown cell type");
-                        }
-
-                        AppendValue(sb, value);
-                    }
-
-                    if (row < length - 1)
-                        sb.Append(Environment.NewLine);
-
-                    file.Write(sb.ToString());
-                    sb.Clear();
-                }
             }
         }
 

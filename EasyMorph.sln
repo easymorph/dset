@@ -1,8 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyMorph", "EasyMorph\EasyMorph.csproj", "{9A96DBE3-34E0-442A-B28A-A1CE4BBB6C6B}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyMorph", "EasyMorph\EasyMorph.csproj", "{9A96DBE3-34E0-442A-B28A-A1CE4BBB6C6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DsetToCsv", "DsetToCsv\DsetToCsv.csproj", "{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DsetToCsv", "DsetToCsv\DsetToCsv.csproj", "{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyMorph.Tests", "EasyMorph.Tests\EasyMorph.Tests.csproj", "{968A8897-20EA-4EB8-B299-1957A0202CB2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +23,15 @@ Global
 		{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03B84BCA-DAB4-409B-99A6-2E3492C9FA9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{968A8897-20EA-4EB8-B299-1957A0202CB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{968A8897-20EA-4EB8-B299-1957A0202CB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{968A8897-20EA-4EB8-B299-1957A0202CB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{968A8897-20EA-4EB8-B299-1957A0202CB2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {03EC80A8-B294-4A23-9473-83538146334D}
 	EndGlobalSection
 EndGlobal
