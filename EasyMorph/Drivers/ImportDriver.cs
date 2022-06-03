@@ -20,6 +20,10 @@ namespace EasyMorph.Drivers
         const string COMPRESSED_COLUMN_TYPE_NAME = "Column.Compressed";
         //Constant which defines constant type of column in file
         const string CONSTANT_COLUMN_TYPE_NAME = "Column.Constant";
+        //Item types
+        const string FIELD_ITEM_TYPE = "EasyMorph.CompressedField.0";
+        const string TABLE_METADATA_ITEM_TYPE = "EasyMorph.TableMetadata.0";
+        const string COLUMNS_METADATA_ITEM_TYPE = "EasyMorph.ColumnsMetadata.0";
 
         /// <summary>
         /// Imports dataset
@@ -56,32 +60,27 @@ namespace EasyMorph.Drivers
                     {
                         config.Token.ThrowIfCancellationRequested();
 
-                        //Read table name
+                        //Item name
                         tableName = br.ReadString();
-                        // SectionType, for now only one type is supported: EasyMorph.CompressedField.0
-                        br.ReadString();
+                        //Item type
+                        string itemType = br.ReadString();
                         //Length of current block(field)
                         long blockLength = 
                             version.Equals(VERSION00) ? br.ReadInt32() : br.ReadInt64();
 
                         long blockStartPosition = fs.Position;
 
-                        //Read field name
-                        string fieldName = br.ReadString();
-                        //Read column type Compressed / Constant
-                        var columnType = br.ReadString();
+                        // Only non-encrypted field items are supported
+                        if (itemType == FIELD_ITEM_TYPE)
+                        {
+                            var column = await ReadColumn(br, config.Token);
 
-                        IColumn column;
-
-                        if (columnType == COMPRESSED_COLUMN_TYPE_NAME)
-                            column = await ReadCompressedColumn(br, fieldName, config.Token);
-                        else if (columnType == CONSTANT_COLUMN_TYPE_NAME)
-                            column = ReadConstantColumn(br, fieldName);
-                        else
-                            throw new Exception($"Unsupported column type: {columnType}");
-
-                        //Add columns to result
-                        columns.Add(column);
+                            //Add columns to result
+                            columns.Add(column);
+                        }
+                        // Metadata items are ignored
+                        else if ((itemType != TABLE_METADATA_ITEM_TYPE) && (itemType != COLUMNS_METADATA_ITEM_TYPE))
+                            throw new Exception($"Unsupported item type: {itemType}");
 
                         //Seek to end of block
                         fs.Seek(blockStartPosition + blockLength, SeekOrigin.Begin);
@@ -93,6 +92,31 @@ namespace EasyMorph.Drivers
             {
                 (IDataset) new Dataset(columns.ToArray(), tableName)
             };
+        }
+
+
+
+        /// <summary>
+        /// Read column from binary reader
+        /// </summary>
+        /// <param name="br">binary reader</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>Column from binary reader</returns>
+        private static async Task<IColumn> ReadColumn(BinaryReader br, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Read field name
+            string fieldName = br.ReadString();
+            //Read column type Compressed / Constant
+            var columnType = br.ReadString();
+
+            if (columnType == COMPRESSED_COLUMN_TYPE_NAME)
+                return await ReadCompressedColumn(br, fieldName, cancellationToken);
+            else if (columnType == CONSTANT_COLUMN_TYPE_NAME)
+                return ReadConstantColumn(br, fieldName);
+            else
+                throw new Exception($"Unsupported column type: {columnType}");
         }
 
         /// <summary>
