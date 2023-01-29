@@ -107,6 +107,21 @@ namespace EasyMorph.Tests
         }
 
         [TestMethod]
+        public async Task TestWithDatasetWithWrongBitWidth()
+        {
+            var datasets = await ImportSourceDatasetAsync("WrongBitWidth-DoNotResave.dset");
+
+            Assert.AreEqual(1, datasets.Length);
+
+            Assert.AreEqual(1, datasets[0].ColumnsCount);
+            Assert.AreEqual(3, datasets[0].RowsCount);
+
+            Assert.AreEqual("Foo", datasets[0].GetText(0, 0));
+            Assert.AreEqual("Bar", datasets[0].GetText(0, 1));
+            Assert.AreEqual(string.Empty, datasets[0].GetText(0, 2));
+        }
+
+        [TestMethod]
         public async Task TestWithEncryptedFile()
         {
             try

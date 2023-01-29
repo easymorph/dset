@@ -70,10 +70,12 @@ namespace EasyMorph.Drivers
 
                         long blockStartPosition = fs.Position;
 
+                        var blockMetadata = new BlockMetadata(tableName, itemType, blockStartPosition, blockLength);
+
                         // Only non-encrypted field items are supported
                         if (itemType == FIELD_ITEM_TYPE)
                         {
-                            var column = await ReadColumn(br, config.Token);
+                            var column = await ReadColumn(blockMetadata, br, config.Token);
 
                             //Add columns to result
                             columns.Add(column);
@@ -99,10 +101,11 @@ namespace EasyMorph.Drivers
         /// <summary>
         /// Read column from binary reader
         /// </summary>
+        /// <param name="blockMetadata">Current block metadata. Required by the ReadCompressedColumn() method.</param>
         /// <param name="br">binary reader</param>
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns>Column from binary reader</returns>
-        private static async Task<IColumn> ReadColumn(BinaryReader br, CancellationToken cancellationToken)
+        private static async Task<IColumn> ReadColumn(BlockMetadata blockMetadata, BinaryReader br, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -112,7 +115,7 @@ namespace EasyMorph.Drivers
             var columnType = br.ReadString();
 
             if (columnType == COMPRESSED_COLUMN_TYPE_NAME)
-                return await ReadCompressedColumn(br, fieldName, cancellationToken);
+                return await ReadCompressedColumn(blockMetadata, br, fieldName, cancellationToken);
             else if (columnType == CONSTANT_COLUMN_TYPE_NAME)
                 return ReadConstantColumn(br, fieldName);
             else
@@ -142,7 +145,7 @@ namespace EasyMorph.Drivers
         /// <param name="fieldName">name of read column</param>
         /// <param name="token">token to monitor cancellation requests</param>
         /// <returns>Column from binary reader</returns>
-        private static async Task<CompressedColumn> ReadCompressedColumn(BinaryReader br, string fieldName, CancellationToken token)
+        private static async Task<CompressedColumn> ReadCompressedColumn(BlockMetadata blockMetadata, BinaryReader br, string fieldName, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -165,6 +168,35 @@ namespace EasyMorph.Drivers
             //Read vector as byte array
             int vectorLength = br.ReadInt32();
 
+            // Handle columns with incorrect bitWidth.
+            // For EasyMorph devs: See comments in the HIBC00\CompressedFieldParser.cs:ReadCompressedColumn()
+            // method for details.
+
+            long vectorLengthInBits = (long)vectorLength * bitWidth;
+            long vectorLengthInBytes =
+                vectorLengthInBits % 8L == 0
+                    ? vectorLengthInBits / 8L
+                    : vectorLengthInBits / 8L + 1;
+
+            long? blockBytesRead = br.BaseStream.Position - blockMetadata.BlockStartPosition;
+            long? remainingBytesInBlock = blockMetadata.BlockLength - blockBytesRead;
+
+            // In case of remaining vector bytes treat bitWidth as incorrect
+            // and try to increase it by 1.
+            if (remainingBytesInBlock > vectorLengthInBytes)
+            {
+                bitWidth = bitWidth + 1;
+                vectorLengthInBits = (long)vectorLength * bitWidth;
+                vectorLengthInBytes =
+                    vectorLengthInBits % 8L == 0
+                        ? vectorLengthInBits / 8L
+                        : vectorLengthInBits / 8L + 1;
+
+                // JIC check that expected and recalculated actual block length are equal
+                if (vectorLengthInBytes != remainingBytesInBlock)
+                    throw new Exception("Recalculated vector length should be the same the remainig bytes number");
+            }
+
             var stream = br.BaseStream;
             var numberOfBytes = (int) Math.Ceiling((double) bitWidth * vectorLength / 8.0);
             byte[] bytes = new byte[numberOfBytes];
@@ -174,6 +206,15 @@ namespace EasyMorph.Drivers
             {
                 var count = Math.Min(bytes.Length - offset, chunkSize);
                 offset += await stream.ReadAsync(bytes, offset, count, token);
+            }
+
+            // We can't detect a column with incorrect bitWidth (mentioned above)
+            // by comparing vector length when vector contains only 1 byte.
+            // But we can try to detect that that byte contains non-zero bits
+            // after the expected length in bits.
+            if ((vectorLengthInBytes == 1) && ((bytes[0] >> (int)vectorLengthInBits) != 0))
+            {
+                bitWidth = bitWidth + 1;
             }
 
             return new CompressedColumn(bytes, vocabulary, bitWidth, vectorLength, fieldName);
